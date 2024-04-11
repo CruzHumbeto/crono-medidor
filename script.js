@@ -116,7 +116,8 @@ function playStop() {
   let estadoActual = inicio_pausa.getAttribute("estado");
 
   if (estadoActual === "inicio") {
-    run_crono();
+    //run_crono();
+    run_countdown();
     inicio_pausa.setAttribute("estado", "pausa");
     inicio_pausa.textContent = "Pausa";
   } else {
@@ -228,4 +229,50 @@ function poneTiempo(event) {
 
   calculaTiempo();
   write_crono();
+}
+
+function run_countdown() {
+  time = setInterval(() => {
+    ms--; // Decrementar ms
+
+    if (ms < 0 && ss > 0) {
+      ms = 99;
+      ss--;
+      ss = ss < 10 ? "0" + ss : ss;
+    } else if (ms < 0) {
+      ms = 99;
+      ss = 59;
+      ss = ss < 10 ? "0" + ss : ss;
+      mm--;
+    }
+
+    if (ss < 0 && mm > 0) {
+      ss = 59;
+      mm--;
+      mm = mm < 10 ? "0" + mm : mm;
+    } else if (ss < 0 && mm == 0) {
+      ss = 59;
+      mm = 59;
+      mm = mm < 10 ? "0" + mm : mm;
+      hh--;
+    }
+
+    if (mm < 0 && hh > 0) {
+      mm = 59;
+      hh--;
+      hh = hh < 10 ? "0" + hh : hh;
+    } else if (mm < 0 && hh == 0) {
+      mm = 59;
+      hh = 0;
+      hh = hh < 10 ? "0" + hh : hh;
+    }
+
+    if (hh <= 0 && mm <= 0 && ss <= 0 && mm <= 0) {
+      reset_crono();
+      inicio_pausa.setAttribute("estado", "inicio");
+      inicio_pausa.textContent = "Inicio";
+    }
+
+    write_crono();
+  }, 10);
 }
