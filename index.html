@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cronos timer</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Crono-medidor</h1>
+    </header>
+    <main>
+      <header class="modos">
+        <button class="modo_crono">Cronometro</button>
+        <button class="modo_timer">Temporizador</button>
+        <button class="modo_pom">Pomodoro</button>
+        <button class="modo_metro">Metrónomo</button>
+      </header>
+      <article class="tarjeta">
+        <div class="time">
+          <span class="horas">00</span>
+          <span class="puntos">:</span>
+          <span class="minutos">00</span>
+          <span class="puntos">:</span>
+          <span class="segundos">00</span>
+          <span class="puntos">:</span>
+          <span class="miliseg">00</span>
+        </div>
+        <div class="options">
+          <div class="cronometro">
+            <button class="inicio_pausa">Inicio/Pausa</button>
+            <button class="reiniciar">Reiniciar</button>
+          </div>
+
+          <div class="in_crono inactive">
+            <label for="in_horas">Horas: </label>
+            <input type="number" name="horas" id="in_horas" min="0" value="0" />
+            <label for="in_minutos">Minutos:</label>
+            <input
+              type="number"
+              name="minutos"
+              id="in_minutos"
+              min="0"
+              max="60"
+              value="0"
+            />
+            <label for="in_segundos">Segundos:</label>
+            <input
+              type="number"
+              name="segundos"
+              id="in_segundos"
+              min="0"
+              max="60"
+              value="0"
+            />
+          </div>
+          <div class="in_pom inactive">
+            <label for="in_trabajo">Pomodoro</label>
+            <input type="number" name="trabajo" id="in_trabajo" />
+            <label for="in_p_corta">pausa corta</label>
+            <input type="number" name="p_corta" id="in_p_corta" />
+            <label for="in_p_larga">pausa larga</label>
+            <input type="number" name="p_larga" id="in_p_larga" />
+          </div>
+          <div class="in_tempo inactive">
+            <input type="range" name="bpm" id="in_bpm" min="1" max="300" />
+          </div>
+        </div>
+      </article>
+    </main>
+    <script src="script.js"></script>
+  </body>
+</html>

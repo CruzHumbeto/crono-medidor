@@ -1,0 +1,101 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+    "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+}
+
+body {
+  background-color: rgb(127, 219, 255);
+}
+
+header {
+  display: flex;
+  margin: 1rem;
+}
+
+h1 {
+  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  font-size: 4rem;
+  font-weight: bold;
+  text-align: center;
+  border: 0.4rem solid black;
+  padding: 1rem;
+  margin: auto;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 3rem;
+}
+
+.modos {
+  display: flex;
+  flex-wrap: wrap;
+  min-width: 2.5rem;
+  align-items: center;
+  min-height: 3.5rem;
+}
+
+.modos button {
+  font-size: 1.5rem;
+  padding: 0.3rem;
+  margin: 0 1rem 0 1rem;
+  border: none;
+  background: local;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.modos button:hover {
+  border-bottom: 0.2rem solid black;
+}
+
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  padding: 3rem;
+  width: 65lvw;
+  height: 40lvh;
+  border-radius: 2rem;
+  background-color: azure;
+  box-shadow: 1px 3px 10px 2px rgb(91, 91, 91);
+}
+
+.tarjeta .time {
+  margin: auto;
+}
+
+.tarjeta .time span {
+  font-size: 3.5rem;
+}
+
+.tarjeta .options {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0.5rem;
+  box-shadow: 3px 6px 2rem 2px gray;
+  border-radius: 1.5rem;
+}
+
+.tarjeta .options button {
+  padding: 0.7rem;
+  border-radius: 0.5rem;
+}
+
+.tarjeta .options input {
+  width: 3rem;
+  height: 2rem;
+}
+
+.inactive {
+  display: none;
+}
+
+.modos button.op_click {
+  border-bottom: 0.2rem solid black;
+}
