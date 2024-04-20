@@ -1,4 +1,5 @@
 let hh = (mm = ss = ms = 0);
+let timeInInit = [];
 
 // elementos de menu de funcionaliades ----------------------------
 
@@ -117,6 +118,8 @@ function playStop() {
 
   if (estadoActual === "inicio") {
     //run_crono();
+    //colorete();
+    timeInInit = captura();
     run_countdown();
     inicio_pausa.setAttribute("estado", "pausa");
     inicio_pausa.textContent = "Pausa";
@@ -180,7 +183,7 @@ function reset_crono() {
 
 // +++ funciones de temporizador +++
 
-function calculaTiempo() {
+function calculaTiempo(ss, mm, hh) {
   let mds = ss / 60;
   let hdm = mm / 60;
   let sr = (mds - Math.trunc(mds)) * 60;
@@ -204,6 +207,8 @@ function calculaTiempo() {
       mm = Math.floor(mr);
     }
   }
+
+  return [hh, mm, ss];
 }
 
 function poneTiempo(event) {
@@ -227,19 +232,19 @@ function poneTiempo(event) {
       console.log("Tipo de tiempo no reconocido");
   }
 
-  calculaTiempo();
+  calculaTiempo(ss, mm, hh);
   write_crono();
 }
 
 function run_countdown() {
   time = setInterval(() => {
-    ms--; // Decrementar ms
+    ms--;
 
     if (ms < 0 && ss > 0) {
       ms = 99;
       ss--;
       ss = ss < 10 ? "0" + ss : ss;
-    } else if (ms < 0) {
+    } else if (ms < 0 && ss == 0) {
       ms = 99;
       ss = 59;
       ss = ss < 10 ? "0" + ss : ss;
@@ -274,5 +279,89 @@ function run_countdown() {
     }
 
     write_crono();
+    colorete();
   }, 10);
+}
+
+function captura() {
+  let segundos = parseInt(seg.innerHTML);
+  let minutos = parseInt(min.innerHTML);
+  let horas = parseInt(hr.innerHTML);
+
+  return [horas, minutos, segundos];
+}
+
+function tiempo_a_seg(horas, minutos, segundos) {
+  let min_seg = minutos * 60;
+  let hor_seg = horas * 3600;
+  let tts = segundos + min_seg + hor_seg; // timpo total en segundos
+
+  //alert(`el tiempo total en segundos es de ${tts}`);
+  return tts;
+}
+
+function colorete() {
+  let tt = timeInInit;
+  let tis = tiempo_a_seg(tt[0], tt[1], tt[2]); // tiempo al inicio en segundos
+  let inicio = tis;
+
+  let t_run = captura();
+  let t_run_seg = tiempo_a_seg(t_run[0], t_run[1], t_run[2]); // tiempo actual en segundos
+
+  let color;
+
+  let verde_amarillo = [
+    "#00FF00",
+    "#7FFF00",
+    "#ADFF2F",
+    "#DFFF00",
+    "#FFFF00",
+    "#FFFF33",
+    "#FFD700",
+    "#FFDB58",
+    "#FFCC00",
+    "#FFBF00",
+  ];
+
+  let amarillo_rojo = [
+    "#FFFF00",
+    "#FFA500",
+    "#FF7F00",
+    "#FF4500",
+    "#FF2400",
+    "#8B0000",
+    "#FF0000",
+    "#FF4500",
+    "#DC143C",
+    "#FF0000",
+  ];
+
+  let cambio_1 = inicio * (2 / 3);
+  let cambio_2 = inicio * (1 / 2);
+  let cambio_3 = inicio * (1 / 3);
+
+  if (t_run_seg >= cambio_1) {
+    color = verde_amarillo[0];
+    tarjeta.style.background = color;
+  }
+
+  if (t_run_seg < cambio_1 && t_run_seg >= cambio_2) {
+    for (let i = 0; i < verde_amarillo.length; i++) {
+      color = verde_amarillo[i];
+      tarjeta.style.background = color;
+    }
+  }
+  if (t_run_seg < cambio_2 && t_run_seg >= cambio_3) {
+    color = amarillo_rojo[0];
+    tarjeta.style.background = color;
+  }
+  if (t_run_seg < cambio_3) {
+    for (let i = 0; i < amarillo_rojo.length; i++) {
+      color = amarillo_rojo[i];
+      tarjeta.style.background = color;
+    }
+  }
+  //tarjeta.style.background = color;
+  console.log(tis);
+  console.log(t_run_seg);
 }
