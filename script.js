@@ -242,13 +242,16 @@ function run_countdown() {
 
     if (ms < 0 && ss > 0) {
       ms = 99;
+      ms = ms < 10 ? "0" + ms : ms;
       ss--;
       ss = ss < 10 ? "0" + ss : ss;
     } else if (ms < 0 && ss == 0) {
       ms = 99;
+      ms = ms < 10 ? "0" + ms : ms;
       ss = 59;
       ss = ss < 10 ? "0" + ss : ss;
       mm--;
+      mm = mm < 10 ? "0" + mm : mm;
     }
 
     if (ss < 0 && mm > 0) {
@@ -308,6 +311,8 @@ function colorete() {
   let t_run = captura();
   let t_run_seg = tiempo_a_seg(t_run[0], t_run[1], t_run[2]); // tiempo actual en segundos
 
+  let porcentaje = (t_run_seg / inicio) * 100;
+
   let color;
 
   let verde_amarillo = [
@@ -336,32 +341,29 @@ function colorete() {
     "#FF0000",
   ];
 
-  let cambio_1 = inicio * (2 / 3);
-  let cambio_2 = inicio * (1 / 2);
-  let cambio_3 = inicio * (1 / 3);
+  const all_colors = verde_amarillo.concat(amarillo_rojo);
 
-  if (t_run_seg >= cambio_1) {
-    color = verde_amarillo[0];
-    tarjeta.style.background = color;
+  function stepNumArray(tope, nPiezas) {
+    let pasos = tope / nPiezas;
+    let stepArray = [];
+
+    for (let i = tope; i > 0; i -= pasos) {
+      stepArray.push(i);
+    }
+    return stepArray;
   }
 
-  if (t_run_seg < cambio_1 && t_run_seg >= cambio_2) {
-    for (let i = 0; i < verde_amarillo.length; i++) {
-      color = verde_amarillo[i];
-      tarjeta.style.background = color;
+  const cambios = stepNumArray(100, 20);
+
+  for (let i = 0; i < cambios.length; i++) {
+    if (porcentaje > cambios[i]) {
+      let nPorcentaje = porcentaje;
+      nPorcentaje = cambios[i];
+      tarjeta.style.background = all_colors[cambios.indexOf(nPorcentaje)];
+      break;
     }
   }
-  if (t_run_seg < cambio_2 && t_run_seg >= cambio_3) {
-    color = amarillo_rojo[0];
-    tarjeta.style.background = color;
-  }
-  if (t_run_seg < cambio_3) {
-    for (let i = 0; i < amarillo_rojo.length; i++) {
-      color = amarillo_rojo[i];
-      tarjeta.style.background = color;
-    }
-  }
-  //tarjeta.style.background = color;
-  console.log(tis);
-  console.log(t_run_seg);
+
+  //tarjeta.style.background = all_colors[cambios.indexOf(porcentaje)];
+  console.log(porcentaje);
 }
