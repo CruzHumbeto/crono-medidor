@@ -1,6 +1,15 @@
 let hh = (mm = ss = ms = 0);
 let timeInInit = [];
 
+const audioContext = new AudioContext();
+let oscillator;
+
+let pomodoro = {
+  t_working: ["Pomodoro", 25],
+  shortPause: ["Pausa corta", 5],
+  largePause: ["Pausa larga", 15],
+};
+
 // elementos de menu de funcionaliades ----------------------------
 
 const button_crono = document.querySelector(".modo_crono");
@@ -54,6 +63,10 @@ reiniciar.addEventListener("click", mainReset);
 timerH.addEventListener("input", poneTiempo);
 timerM.addEventListener("input", poneTiempo);
 timerS.addEventListener("input", poneTiempo);
+
+pom_trabajo.addEventListener("input", poneTimer);
+pom_pausita.addEventListener("input", poneTimer);
+pom_pausota.addEventListener("input", poneTimer);
 
 // acciones de menu de opciones de funcionalidades ----------------------------
 
@@ -117,14 +130,17 @@ function playStop() {
   let estadoActual = inicio_pausa.getAttribute("estado");
 
   if (estadoActual === "inicio") {
-    //run_crono();
-    //colorete();
-    timeInInit = captura();
-    run_countdown();
+    //run_crono();  // funcion de cronometro
+    //timeInInit = captura(); // variable necesaria para la funcioon colorete
+    //run_countdown(); // funcion de timer
+    pomodoro_driver();
+
     inicio_pausa.setAttribute("estado", "pausa");
     inicio_pausa.textContent = "Pausa";
   } else {
     stop_crono();
+    //enableInputPom();
+
     inicio_pausa.setAttribute("estado", "inicio");
     inicio_pausa.textContent = "Inicio";
   }
@@ -179,6 +195,7 @@ function reset_crono() {
   clearInterval(time);
   hh = mm = ss = ms = "0" + 0;
   write_crono();
+  tarjeta.style.background = "white";
 }
 
 // +++ funciones de temporizador +++
@@ -232,7 +249,10 @@ function poneTiempo(event) {
       console.log("Tipo de tiempo no reconocido");
   }
 
-  calculaTiempo(ss, mm, hh);
+  let arrayTime = calculaTiempo(ss, mm, hh);
+  hh = arrayTime[0];
+  mm = arrayTime[1];
+  ss = arrayTime[2];
   write_crono();
 }
 
@@ -240,45 +260,52 @@ function run_countdown() {
   time = setInterval(() => {
     ms--;
 
-    if (ms < 0 && ss > 0) {
+    if (ms <= 0 && ss > 0) {
       ms = 99;
-      ms = ms < 10 ? "0" + ms : ms;
       ss--;
-      ss = ss < 10 ? "0" + ss : ss;
-    } else if (ms < 0 && ss == 0) {
-      ms = 99;
       ms = ms < 10 ? "0" + ms : ms;
-      ss = 59;
       ss = ss < 10 ? "0" + ss : ss;
+    } else if (ms <= 0 && ss < 0) {
+      ms = 99;
+      ss = 59;
       mm--;
+      ms = ms < 10 ? "0" + ms : ms;
+      ss = ss < 10 ? "0" + ss : ss;
       mm = mm < 10 ? "0" + mm : mm;
     }
 
-    if (ss < 0 && mm > 0) {
+    if (ss <= 0 && mm > 0) {
       ss = 59;
       mm--;
+      ss = ss < 10 ? "0" + ss : ss;
       mm = mm < 10 ? "0" + mm : mm;
-    } else if (ss < 0 && mm == 0) {
+    } else if (ss <= 0 && mm < 0) {
       ss = 59;
       mm = 59;
+      hh--;
+      ss = ss < 10 ? "0" + ss : ss;
       mm = mm < 10 ? "0" + mm : mm;
-      hh--;
-    }
-
-    if (mm < 0 && hh > 0) {
-      mm = 59;
-      hh--;
       hh = hh < 10 ? "0" + hh : hh;
-    } else if (mm < 0 && hh == 0) {
+    }
+
+    if (mm <= 0 && hh > 0) {
+      mm = 59;
+      hh--;
+      mm = mm < 10 ? "0" + mm : mm;
+      hh = hh < 10 ? "0" + hh : hh;
+    } else if (mm <= 0 && hh < 0) {
       mm = 59;
       hh = 0;
+      mm = mm < 10 ? "0" + mm : mm;
       hh = hh < 10 ? "0" + hh : hh;
     }
 
-    if (hh <= 0 && mm <= 0 && ss <= 0 && mm <= 0) {
+    if (hh == 0 && mm == 0 && ss == 0 && ms <= 0) {
       reset_crono();
       inicio_pausa.setAttribute("estado", "inicio");
       inicio_pausa.textContent = "Inicio";
+      //bip(440 * 2, 0.5);
+      reBip();
     }
 
     write_crono();
@@ -366,4 +393,120 @@ function colorete() {
 
   //tarjeta.style.background = all_colors[cambios.indexOf(porcentaje)];
   console.log(porcentaje);
+}
+
+function bip(tone, duration) {
+  return new Promise((resolve) => {
+    oscillator = audioContext.createOscillator();
+    oscillator.frequency.setValueAtTime(tone, audioContext.currentTime);
+    oscillator.type = "triangle";
+    oscillator.connect(audioContext.destination);
+    oscillator.start();
+
+    setTimeout(() => {
+      oscillator.stop();
+      oscillator.disconnect();
+      resolve();
+    }, duration * 1000);
+  });
+}
+
+function reBip() {
+  bip(440 * 6, 0.125)
+    .then(() => bip(440 * 3, 0.25))
+    .then(() => bip(440 * 2, 0.125))
+    .then(() => bip(440 * 1, 0.25))
+    .catch((error) => {
+      console.error("Error al reproducir el tono:", error);
+    });
+}
+
+// +++ funciones de pomodoro +++
+
+function poneTimer(event) {
+  const tipoTimer = event.target.id;
+  const valorTimer = event.target.value;
+
+  switch (tipoTimer) {
+    case "in_trabajo":
+      pomodoro.t_working[1] = valorTimer;
+      mm = pomodoro.t_working[1];
+      console.log("Tiempo de trabajo: " + valorTimer);
+      write_pomodoro(pomodoro.t_working[0], pomodoro.t_working[1]);
+
+      break;
+    case "in_p_corta":
+      pomodoro.shortPause[1] = valorTimer;
+      mm = pomodoro.shortPause[1];
+      console.log("Pausa corta: " + valorTimer);
+      write_pomodoro(pomodoro.shortPause[0], pomodoro.shortPause[1]);
+
+      break;
+    case "in_p_larga":
+      pomodoro.largePause[1] = valorTimer;
+      console.log("Pausa larga: " + valorTimer);
+      write_pomodoro(pomodoro.largePause[0], pomodoro.largePause[1]);
+
+      break;
+    default:
+      console.log("timer no reconocido");
+  }
+}
+
+function write_pomodoro(typeTimer, mm) {
+  mseg.textContent = ms;
+  seg.textContent = ss;
+  min.textContent = mm;
+  hr.textContent = typeTimer;
+}
+
+function pomodoro_driver() {
+  let tPomo = pomodoro.t_working[1];
+  let tCorta = pomodoro.shortPause[1];
+  let tLarga = pomodoro.largePause[1];
+
+  let pomoCount = 0;
+
+  function pomoCorto(tPomo, tCorta) {
+    mm = tPomo;
+    write_crono();
+    run_countdown();
+    timeInInit = captura();
+    mm = tCorta;
+    run_countdown();
+    timeInInit = captura();
+  }
+
+  function pomoLargo(tPomo, tLarga) {
+    mm = tPomo;
+    write_crono();
+    run_countdown();
+    timeInInit = captura();
+    mm = tLarga;
+    run_countdown();
+    timeInInit = captura();
+  }
+
+  if (pomoCount < 4) {
+    disableInputPom();
+    pomoCorto(tPomo, tCorta);
+    pomoCount += 1;
+  }
+  if (pomoCount == 4) {
+    disableInputPom();
+    pomoLargo(tPomo, tLarga);
+    pomoCount = 0;
+  }
+}
+
+function disableInputPom() {
+  pom_trabajo.disabled = true;
+  pom_pausita.disabled = true;
+  pom_pausota.disabled = true;
+}
+
+function enableInputPom() {
+  pom_trabajo.disabled = false;
+  pom_pausita.disabled = false;
+  pom_pausota.disabled = false;
 }
