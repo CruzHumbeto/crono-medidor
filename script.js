@@ -1,3 +1,4 @@
+let time;
 let hh = (mm = ss = ms = 0);
 let timeInInit = [];
 
@@ -5,9 +6,9 @@ const audioContext = new AudioContext();
 let oscillator;
 
 let pomodoro = {
-  t_working: ["Pomodoro", 25],
-  shortPause: ["Pausa corta", 5],
-  largePause: ["Pausa larga", 15],
+  Pomodoro: 0, //25,
+  ShortBreak: 0, //5,
+  LongBreak: 0, // 15,
 };
 
 // elementos de menu de funcionaliades ----------------------------
@@ -27,6 +28,7 @@ const hr = document.querySelector(".horas");
 const min = document.querySelector(".minutos");
 const seg = document.querySelector(".segundos");
 const mseg = document.querySelector(".miliseg");
+const puntos = document.querySelector(".puntos");
 
 // +++ controles +++
 
@@ -131,15 +133,15 @@ function playStop() {
 
   if (estadoActual === "inicio") {
     //run_crono();  // funcion de cronometro
-    //timeInInit = captura(); // variable necesaria para la funcioon colorete
+    timeInInit = captura(); // variable necesaria para la funcioon colorete
     //run_countdown(); // funcion de timer
-    pomodoro_driver();
+    runPomodoro();
 
     inicio_pausa.setAttribute("estado", "pausa");
     inicio_pausa.textContent = "Pausa";
   } else {
     stop_crono();
-    //enableInputPom();
+    enableInputPom();
 
     inicio_pausa.setAttribute("estado", "inicio");
     inicio_pausa.textContent = "Inicio";
@@ -188,7 +190,7 @@ function run_crono() {
 
 function stop_crono() {
   clearInterval(time);
-  alert("Cronómetro detenido");
+  //alert("Cronómetro detenido");
 }
 
 function reset_crono() {
@@ -255,7 +257,7 @@ function poneTiempo(event) {
   ss = arrayTime[2];
   write_crono();
 }
-
+/*
 function run_countdown() {
   time = setInterval(() => {
     ms--;
@@ -312,6 +314,68 @@ function run_countdown() {
     colorete();
   }, 10);
 }
+*/
+///*
+function run_countdown() {
+  return new Promise((resolve) => {
+    time = setInterval(() => {
+      ms--;
+
+      if (ms <= 0 && ss > 0) {
+        ms = 99;
+        ss--;
+        ms = ms < 10 ? "0" + ms : ms;
+        ss = ss < 10 ? "0" + ss : ss;
+      } else if (ms <= 0 && ss < 0) {
+        ms = 99;
+        ss = 59;
+        mm--;
+        ms = ms < 10 ? "0" + ms : ms;
+        ss = ss < 10 ? "0" + ss : ss;
+        mm = mm < 10 ? "0" + mm : mm;
+      }
+
+      if (ss <= 0 && mm > 0) {
+        ss = 59;
+        mm--;
+        ss = ss < 10 ? "0" + ss : ss;
+        mm = mm < 10 ? "0" + mm : mm;
+      } else if (ss <= 0 && mm < 0) {
+        ss = 59;
+        mm = 59;
+        hh--;
+        ss = ss < 10 ? "0" + ss : ss;
+        mm = mm < 10 ? "0" + mm : mm;
+        hh = hh < 10 ? "0" + hh : hh;
+      }
+
+      if (mm <= 0 && hh > 0) {
+        mm = 59;
+        hh--;
+        mm = mm < 10 ? "0" + mm : mm;
+        hh = hh < 10 ? "0" + hh : hh;
+      } else if (mm <= 0 && hh < 0) {
+        mm = 59;
+        hh = 0;
+        mm = mm < 10 ? "0" + mm : mm;
+        hh = hh < 10 ? "0" + hh : hh;
+      }
+
+      if (hh == 0 && mm == 0 && ss == 0 && ms <= 0) {
+        reBip();
+        clearInterval(time);
+        reset_crono();
+        inicio_pausa.setAttribute("estado", "inicio");
+        inicio_pausa.textContent = "Inicio";
+        //reBip();
+        resolve();
+      }
+      write_crono();
+      colorete();
+    }, 10);
+  });
+}
+//*/
 
 function captura() {
   let segundos = parseInt(seg.innerHTML);
@@ -392,11 +456,11 @@ function colorete() {
   }
 
   //tarjeta.style.background = all_colors[cambios.indexOf(porcentaje)];
-  console.log(porcentaje);
+  //console.log(porcentaje);
 }
 
 function bip(tone, duration) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     oscillator = audioContext.createOscillator();
     oscillator.frequency.setValueAtTime(tone, audioContext.currentTime);
     oscillator.type = "triangle";
@@ -407,6 +471,7 @@ function bip(tone, duration) {
       oscillator.stop();
       oscillator.disconnect();
       resolve();
+      reject("Ha habido un error con el sonido.");
     }, duration * 1000);
   });
 }
@@ -417,7 +482,7 @@ function reBip() {
     .then(() => bip(440 * 2, 0.125))
     .then(() => bip(440 * 1, 0.25))
     .catch((error) => {
-      console.error("Error al reproducir el tono:", error);
+      console.error("Error producido: " + error);
     });
 }
 
@@ -429,23 +494,24 @@ function poneTimer(event) {
 
   switch (tipoTimer) {
     case "in_trabajo":
-      pomodoro.t_working[1] = valorTimer;
-      mm = pomodoro.t_working[1];
+      pomodoro.Pomodoro = valorTimer;
+      //mm = pomodoro.Pomodoro;
       console.log("Tiempo de trabajo: " + valorTimer);
-      write_pomodoro(pomodoro.t_working[0], pomodoro.t_working[1]);
+      write_pomodoro("Pomodoro", pomodoro.Pomodoro);
 
       break;
     case "in_p_corta":
-      pomodoro.shortPause[1] = valorTimer;
-      mm = pomodoro.shortPause[1];
+      pomodoro.ShortBreak = valorTimer;
+      //mm = pomodoro.ShortBreak;
       console.log("Pausa corta: " + valorTimer);
-      write_pomodoro(pomodoro.shortPause[0], pomodoro.shortPause[1]);
+      write_pomodoro("Short break", pomodoro.ShortBreak);
 
       break;
     case "in_p_larga":
-      pomodoro.largePause[1] = valorTimer;
+      pomodoro.LongBreak = valorTimer;
+      //mm = pomodoro.LongBreak;
       console.log("Pausa larga: " + valorTimer);
-      write_pomodoro(pomodoro.largePause[0], pomodoro.largePause[1]);
+      write_pomodoro("Longe break", pomodoro.LongBreak);
 
       break;
     default:
@@ -460,43 +526,12 @@ function write_pomodoro(typeTimer, mm) {
   hr.textContent = typeTimer;
 }
 
-function pomodoro_driver() {
-  let tPomo = pomodoro.t_working[1];
-  let tCorta = pomodoro.shortPause[1];
-  let tLarga = pomodoro.largePause[1];
-
-  let pomoCount = 0;
-
-  function pomoCorto(tPomo, tCorta) {
-    mm = tPomo;
-    write_crono();
-    run_countdown();
-    timeInInit = captura();
-    mm = tCorta;
-    run_countdown();
-    timeInInit = captura();
-  }
-
-  function pomoLargo(tPomo, tLarga) {
-    mm = tPomo;
-    write_crono();
-    run_countdown();
-    timeInInit = captura();
-    mm = tLarga;
-    run_countdown();
-    timeInInit = captura();
-  }
-
-  if (pomoCount < 4) {
-    disableInputPom();
-    pomoCorto(tPomo, tCorta);
-    pomoCount += 1;
-  }
-  if (pomoCount == 4) {
-    disableInputPom();
-    pomoLargo(tPomo, tLarga);
-    pomoCount = 0;
-  }
+function write_txt(txt) {
+  mseg.textContent = "";
+  seg.textContent = "";
+  min.textContent = "";
+  puntos.textContent = "";
+  hr.textContent = txt;
 }
 
 function disableInputPom() {
@@ -509,4 +544,113 @@ function enableInputPom() {
   pom_trabajo.disabled = false;
   pom_pausita.disabled = false;
   pom_pausota.disabled = false;
+}
+
+class PomodoroIterator {
+  constructor(pomodoroTimes) {
+    this.pomodoroTimes = pomodoroTimes;
+    this.pomodoros = [
+      "Pomodoro",
+      "ShortBreak",
+      "Pomodoro",
+      "ShortBreak",
+      "Pomodoro",
+      "ShortBreak",
+      "Pomodoro",
+      "LongBreak",
+    ];
+    this.currentIndex = 0;
+    this.resetCount = 4; // Reiniciar cada 4 pomodoros
+    this.currentCount = 0;
+  }
+
+  [Symbol.iterator]() {
+    return this;
+  }
+
+  next() {
+    if (this.currentIndex >= this.pomodoros.length) {
+      this.currentIndex = 0;
+      this.currentCount = 0;
+      return { done: true };
+    }
+
+    const currentStep = this.pomodoros[this.currentIndex];
+    const stepTime = this.pomodoroTimes[currentStep];
+    this.currentIndex++;
+
+    if (this.currentIndex % 2 === 0) {
+      this.currentCount++;
+    }
+
+    return { value: { step: currentStep, time: stepTime }, done: false };
+  }
+
+  reset() {
+    this.currentIndex = 0;
+    this.currentCount = 0;
+  }
+
+  getCurrentStep() {
+    return this.pomodoros[this.currentIndex];
+  }
+
+  getNextStep() {
+    if (this.currentIndex + 1 < this.pomodoros.length) {
+      return this.pomodoros[this.currentIndex + 1];
+    }
+    return null;
+  }
+}
+
+const pomodoroIterator = new PomodoroIterator(pomodoro);
+
+async function runPomodoro() {
+  disableInputPom();
+  for (const step of pomodoroIterator) {
+    console.log(`Doing ${step.step}`);
+    mm = parseInt(step.time);
+    //write_pomodoro(step.step, step.time);
+
+    //console.log(`tiempo inicial: ${timeInInit}`);
+
+    write_pomodoro(step.step, step.time);
+    await new Promise((resolve) => setTimeout(resolve, 1500)); // Pausa de 1 segundo
+
+    write_crono();
+    timeInInit = captura();
+    await run_countdown();
+
+    await preguntaContinua(step.step);
+
+    if (step.step === "LongBreak" && !pomodoroIterator.getNextStep()) {
+      await preguntaRenueva();
+    }
+  }
+}
+
+async function preguntaRenueva() {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      if (confirm("Deceas continuar con otro ciclo pomodoro?")) {
+        pomodoroIterator.reset();
+        resolve();
+      } else {
+        enableInputPom();
+        reset_crono();
+      }
+    }, 1000);
+  });
+}
+
+async function preguntaContinua(step) {
+  return new Promise((resolve) => {
+    stop_crono();
+    reset_crono();
+    setTimeout(() => {
+      alert(`Ha terminado el tiempo de ${step}`);
+    }, 1000);
+    //alert(`Ha terminado el tiempo de ${step}`);
+    resolve();
+  });
 }
