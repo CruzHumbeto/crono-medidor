@@ -57,11 +57,29 @@
           </div>
           <div class="in_pom inactive">
             <label for="in_trabajo">Pomodoro</label>
-            <input type="number" name="trabajo" id="in_trabajo" />
+            <input
+              type="number"
+              name="trabajo"
+              id="in_trabajo"
+              min="0"
+              value="25"
+            />
             <label for="in_p_corta">pausa corta</label>
-            <input type="number" name="p_corta" id="in_p_corta" />
+            <input
+              type="number"
+              name="p_corta"
+              id="in_p_corta"
+              min="0"
+              value="5"
+            />
             <label for="in_p_larga">pausa larga</label>
-            <input type="number" name="p_larga" id="in_p_larga" />
+            <input
+              type="number"
+              name="p_larga"
+              id="in_p_larga"
+              min="0"
+              value="15"
+            />
           </div>
           <div class="in_tempo inactive">
             <input type="range" name="bpm" id="in_bpm" min="1" max="300" />

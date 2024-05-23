@@ -6,9 +6,9 @@ const audioContext = new AudioContext();
 let oscillator;
 
 let pomodoro = {
-  Pomodoro: 0, //25,
-  ShortBreak: 0, //5,
-  LongBreak: 0, // 15,
+  Pomodoro: 25, //25,
+  ShortBreak: 5, //5,
+  LongBreak: 15, // 15,
 };
 
 // elementos de menu de funcionaliades ----------------------------
