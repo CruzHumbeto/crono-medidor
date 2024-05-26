@@ -75,6 +75,7 @@ main {
 
 .tarjeta .options {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-around;
   align-items: center;
   padding: 0.5rem;
@@ -92,8 +93,35 @@ main {
   height: 2rem;
 }
 
+.tarjeta .in_tempo {
+  flex-basis: 50%;
+}
+
+.tarjeta .options #in_bpm {
+  appearance: none;
+  height: 0.7rem;
+  width: 100%;
+  border-radius: 1rem;
+  background: aqua;
+  border: solid 3px darkslateblue;
+}
+
+.tarjeta .options #in_bpm::-webkit-slider-thumb {
+  appearance: none;
+  cursor: pointer;
+  height: 1.5rem;
+  width: 0.8rem;
+  background-color: darkcyan;
+  border: solid 4px black;
+  border-radius: 1rem;
+  box-shadow: 1px 2px 5px 1px darkslategrey;
+  /*-webkit-box-shadow: 1px 3px 10px 2px darkslategrey;
+  -moz-box-shadow: 1px 3px 10px 2px darkslategrey;*/
+}
+
 .inactive {
   display: none;
+  flex-grow: 1;
 }
 
 .modos button.op_click {

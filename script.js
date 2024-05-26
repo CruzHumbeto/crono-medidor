@@ -11,6 +11,11 @@ let pomodoro = {
   LongBreak: 15, // 15,
 };
 
+let v_bpm = marcaTempo;
+let isPlaying = false;
+let nextNoteTime = 0.0; // Cuando se debe tocar la próxima nota del metronomo
+let intervalID;
+
 // elementos de menu de funcionaliades ----------------------------
 
 const button_crono = document.querySelector(".modo_crono");
@@ -70,6 +75,8 @@ pom_trabajo.addEventListener("input", poneTimer);
 pom_pausita.addEventListener("input", poneTimer);
 pom_pausota.addEventListener("input", poneTimer);
 
+metro_bpm.addEventListener("input", marcaTempo);
+
 // acciones de menu de opciones de funcionalidades ----------------------------
 
 function show_crono() {
@@ -122,26 +129,31 @@ function show_metro() {
   button_pom.classList.remove("op_click");
   button_metro.classList.add("op_click");
   reset_crono();
+  write_txt("0 BPM");
 }
 
 // acciones de elementos de tarjeta ---------------------------------------
 
 //  +++ funcion para boton de inicio y pausa +++
-
+// se debe solucionar el problema de siempre comenzar de nuevo al darle a inicio (posible solucion: agregar un tercer estado inicio, play, stop)
 function playStop() {
   let estadoActual = inicio_pausa.getAttribute("estado");
 
   if (estadoActual === "inicio") {
     //run_crono();  // funcion de cronometro
-    timeInInit = captura(); // variable necesaria para la funcioon colorete
+    //timeInInit = captura(); // variable necesaria para la funcioon colorete
     //run_countdown(); // funcion de timer
-    runPomodoro();
+    //runPomodoro(); // funcion de manejo de pomodoro
+    isPlaying = true;
+    startMetronome();
 
     inicio_pausa.setAttribute("estado", "pausa");
     inicio_pausa.textContent = "Pausa";
   } else {
-    stop_crono();
+    //stop_crono();
     enableInputPom();
+    isPlaying = false;
+    stopMetronome();
 
     inicio_pausa.setAttribute("estado", "inicio");
     inicio_pausa.textContent = "Inicio";
@@ -526,13 +538,13 @@ function write_pomodoro(typeTimer, mm) {
   hr.textContent = typeTimer;
 }
 
-function write_txt(txt) {
+/*function write_txt(txt) {
   mseg.textContent = "";
   seg.textContent = "";
   min.textContent = "";
   puntos.textContent = "";
   hr.textContent = txt;
-}
+}*/
 
 function disableInputPom() {
   pom_trabajo.disabled = true;
@@ -609,7 +621,7 @@ async function runPomodoro() {
   disableInputPom();
   for (const step of pomodoroIterator) {
     console.log(`Doing ${step.step}`);
-    mm = parseInt(step.time);
+    ss = parseInt(step.time);
     //write_pomodoro(step.step, step.time);
 
     //console.log(`tiempo inicial: ${timeInInit}`);
@@ -653,4 +665,56 @@ async function preguntaContinua(step) {
     //alert(`Ha terminado el tiempo de ${step}`);
     resolve();
   });
+}
+
+// +++ Funciones de metronomo +++
+
+function write_txt(txt) {
+  // Asegúrate de que todos los elementos estén realmente vacíos antes de actualizar el texto
+  hr.textContent = "";
+  min.textContent = "";
+  seg.textContent = "";
+  mseg.textContent = "";
+  // Limpia todos los elementos con la clase puntos
+  document
+    .querySelectorAll(".puntos")
+    .forEach((punto) => (punto.textContent = ""));
+
+  // Finalmente, establece el valor de BPM en el elemento de horas
+  hr.textContent = txt;
+}
+
+function nextNote() {
+  const secondsPerBeat = 60.0 / v_bpm;
+  nextNoteTime += secondsPerBeat;
+  bip(440, 0.05);
+}
+
+function scheduler() {
+  while (nextNoteTime < audioContext.currentTime + 0.05) {
+    nextNote();
+  }
+  intervalID = setTimeout(scheduler, 25.0);
+}
+
+function startMetronome() {
+  nextNoteTime = audioContext.currentTime;
+  scheduler();
+  isPlaying = true;
+}
+
+function stopMetronome() {
+  clearTimeout(intervalID);
+  isPlaying = false;
+}
+
+function marcaTempo(event) {
+  let valor = event.target.value;
+  v_bpm = valor;
+  write_txt(`${valor} BPM`);
+  if (isPlaying) {
+    clearTimeout(intervalID);
+    nextNoteTime = audioContext.currentTime;
+    scheduler();
+  }
 }
