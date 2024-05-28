@@ -79,6 +79,7 @@ metro_bpm.addEventListener("input", marcaTempo);
 
 // acciones de menu de opciones de funcionalidades ----------------------------
 
+/*
 function show_crono() {
   op_crono.classList.remove("inactive");
   op_timer.classList.add("inactive");
@@ -90,6 +91,7 @@ function show_crono() {
   button_pom.classList.remove("op_click");
   button_metro.classList.remove("op_click");
   reset_crono();
+  resetPuntos();
 }
 
 function show_timer() {
@@ -103,6 +105,7 @@ function show_timer() {
   button_pom.classList.remove("op_click");
   button_metro.classList.remove("op_click");
   reset_crono();
+  resetPuntos();
 }
 
 function show_pom() {
@@ -116,6 +119,7 @@ function show_pom() {
   button_pom.classList.add("op_click");
   button_metro.classList.remove("op_click");
   reset_crono();
+  resetPuntos();
 }
 
 function show_metro() {
@@ -127,9 +131,69 @@ function show_metro() {
   button_crono.classList.remove("op_click");
   button_timer.classList.remove("op_click");
   button_pom.classList.remove("op_click");
-  button_metro.classList.add("op_click");
+  button_metro.classList.add("op_click");  
   reset_crono();
   write_txt("0 BPM");
+}
+*/
+
+// Funciones de Menú
+
+function show_crono() {
+  setActiveOption(op_crono, op_crono, button_crono);
+}
+
+function show_timer() {
+  setActiveOption(op_crono, op_timer, button_timer);
+}
+
+function show_pom() {
+  setActiveOption(op_crono, op_pom, button_pom);
+}
+
+function show_metro() {
+  setActiveOption(op_crono, op_metonomo, button_metro);
+  write_txt("0 BPM");
+}
+
+function setActiveOption(
+  alwaysActiveSectionClass,
+  activeSection,
+  activeButton
+) {
+  // Lista de todas las secciones
+  const sections = [op_crono, op_timer, op_pom, op_metonomo];
+  // Lista de todos los botones
+  const buttons = [button_crono, button_timer, button_pom, button_metro];
+
+  // Ocultar todas las secciones y remover clase 'op_click' de todos los botones
+
+  sections.forEach((sectionClass) => {
+    if (sectionClass !== alwaysActiveSectionClass) {
+      sectionClass.classList.add("inactive");
+    }
+  });
+
+  //sections.forEach((section) => section.classList.add("inactive"));
+  buttons.forEach((button) => button.classList.remove("op_click"));
+
+  // Mostrar la sección activa y añadir clase 'op_click' al botón activo
+
+  const activeSectionElement = activeSection;
+  if (activeSectionElement) {
+    activeSectionElement.classList.remove("inactive");
+  }
+
+  const activeButtonElement = activeButton;
+  if (activeButtonElement) {
+    activeButtonElement.classList.add("op_click");
+  }
+
+  // Restablecer el cronómetro (o cualquier otro estado necesario)
+  reset_crono();
+
+  // Restablecer los puntos
+  resetPuntos();
 }
 
 // acciones de elementos de tarjeta ---------------------------------------
@@ -161,7 +225,9 @@ function playStop() {
 }
 
 function mainReset() {
+  // junto a playStop se debe cambiar para cambiar dependiendo de la herramienta que se quiera usar
   reset_crono();
+  metro_bpm.value = 60;
 }
 
 //  +++ funciones de cronometro +++
@@ -717,4 +783,10 @@ function marcaTempo(event) {
     nextNoteTime = audioContext.currentTime;
     scheduler();
   }
+}
+
+function resetPuntos() {
+  document
+    .querySelectorAll(".puntos")
+    .forEach((punto) => (punto.textContent = ":"));
 }
