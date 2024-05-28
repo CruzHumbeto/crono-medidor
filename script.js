@@ -79,64 +79,6 @@ metro_bpm.addEventListener("input", marcaTempo);
 
 // acciones de menu de opciones de funcionalidades ----------------------------
 
-/*
-function show_crono() {
-  op_crono.classList.remove("inactive");
-  op_timer.classList.add("inactive");
-  op_pom.classList.add("inactive");
-  op_metonomo.classList.add("inactive");
-
-  button_crono.classList.add("op_click");
-  button_timer.classList.remove("op_click");
-  button_pom.classList.remove("op_click");
-  button_metro.classList.remove("op_click");
-  reset_crono();
-  resetPuntos();
-}
-
-function show_timer() {
-  //op_crono.classList.add("inactive");
-  op_timer.classList.remove("inactive");
-  op_pom.classList.add("inactive");
-  op_metonomo.classList.add("inactive");
-
-  button_crono.classList.remove("op_click");
-  button_timer.classList.add("op_click");
-  button_pom.classList.remove("op_click");
-  button_metro.classList.remove("op_click");
-  reset_crono();
-  resetPuntos();
-}
-
-function show_pom() {
-  //op_crono.classList.add("inactive");
-  op_timer.classList.add("inactive");
-  op_pom.classList.remove("inactive");
-  op_metonomo.classList.add("inactive");
-
-  button_crono.classList.remove("op_click");
-  button_timer.classList.remove("op_click");
-  button_pom.classList.add("op_click");
-  button_metro.classList.remove("op_click");
-  reset_crono();
-  resetPuntos();
-}
-
-function show_metro() {
-  //op_crono.classList.add("inactive");
-  op_timer.classList.add("inactive");
-  op_pom.classList.add("inactive");
-  op_metonomo.classList.remove("inactive");
-
-  button_crono.classList.remove("op_click");
-  button_timer.classList.remove("op_click");
-  button_pom.classList.remove("op_click");
-  button_metro.classList.add("op_click");  
-  reset_crono();
-  write_txt("0 BPM");
-}
-*/
-
 // Funciones de Menú
 
 function show_crono() {
@@ -166,7 +108,7 @@ function setActiveOption(
   // Lista de todos los botones
   const buttons = [button_crono, button_timer, button_pom, button_metro];
 
-  // Ocultar todas las secciones y remover clase 'op_click' de todos los botones
+  // Ocultar todas las secciones excepto la que siempre debe estar activa
 
   sections.forEach((sectionClass) => {
     if (sectionClass !== alwaysActiveSectionClass) {
@@ -174,7 +116,6 @@ function setActiveOption(
     }
   });
 
-  //sections.forEach((section) => section.classList.add("inactive"));
   buttons.forEach((button) => button.classList.remove("op_click"));
 
   // Mostrar la sección activa y añadir clase 'op_click' al botón activo
@@ -205,16 +146,17 @@ function playStop() {
 
   if (estadoActual === "inicio") {
     //run_crono();  // funcion de cronometro
-    //timeInInit = captura(); // variable necesaria para la funcioon colorete
-    //run_countdown(); // funcion de timer
+    timeInInit = captura(); // variable necesaria para la funcioon colorete
+    disableInputCountdown();
+    run_countdown(); // funcion de timer
     //runPomodoro(); // funcion de manejo de pomodoro
-    isPlaying = true;
-    startMetronome();
+    //startMetronome();
 
     inicio_pausa.setAttribute("estado", "pausa");
     inicio_pausa.textContent = "Pausa";
   } else {
-    //stop_crono();
+    stop_crono();
+    enableInputCountdown();
     enableInputPom();
     isPlaying = false;
     stopMetronome();
@@ -562,6 +504,18 @@ function reBip() {
     .catch((error) => {
       console.error("Error producido: " + error);
     });
+}
+
+function disableInputCountdown() {
+  timerH.disabled = true;
+  timerM.disabled = true;
+  timerS.disabled = true;
+}
+
+function enableInputCountdown() {
+  timerH.disabled = false;
+  timerM.disabled = false;
+  timerS.disabled = false;
 }
 
 // +++ funciones de pomodoro +++
