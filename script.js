@@ -1,3 +1,42 @@
+const switchRuner = {
+  crono_play: () => {
+    run_crono();
+  },
+  crono_stop: () => {
+    stop_crono();
+  },
+  timer_play: () => {
+    timeInInit = captura();
+    disableInputCountdown();
+    run_countdown();
+  },
+  timer_stop: () => {
+    stop_crono();
+    enableInputCountdown();
+  },
+  pomo_play: () => {
+    if (inicio_pausa.textContent === "Inicio/Pausa") {
+      timeInInit = captura();
+      runPomodoro();
+    } else if (inicio_pausa.textContent === "Inicio") {
+      run_countdown();
+    }
+  },
+  pomo_stop: () => {
+    stop_crono();
+    enableInputPom();
+  },
+  metro_play: () => {
+    startMetronome();
+  },
+  metro_stop: () => {
+    isPlaying = false;
+    stopMetronome();
+  },
+};
+
+let currentMode = "crono"; // "crono", "timer", "pomo", "metro"
+
 let time;
 let hh = (mm = ss = ms = 0);
 let timeInInit = [];
@@ -83,19 +122,23 @@ metro_bpm.addEventListener("input", marcaTempo);
 
 function show_crono() {
   setActiveOption(op_crono, op_crono, button_crono);
+  currentMode = "crono";
 }
 
 function show_timer() {
   setActiveOption(op_crono, op_timer, button_timer);
+  currentMode = "timer";
 }
 
 function show_pom() {
   setActiveOption(op_crono, op_pom, button_pom);
+  currentMode = "pomo";
 }
 
 function show_metro() {
   setActiveOption(op_crono, op_metonomo, button_metro);
   write_txt("0 BPM");
+  currentMode = "metro";
 }
 
 function setActiveOption(
@@ -141,15 +184,15 @@ function setActiveOption(
 
 //  +++ funcion para boton de inicio y pausa +++
 // se debe solucionar el problema de siempre comenzar de nuevo al darle a inicio (posible solucion: agregar un tercer estado inicio, play, stop)
-function playStop() {
+/*function playStop() {
   let estadoActual = inicio_pausa.getAttribute("estado");
 
   if (estadoActual === "inicio") {
     //run_crono();  // funcion de cronometro
     timeInInit = captura(); // variable necesaria para la funcioon colorete
     disableInputCountdown();
-    run_countdown(); // funcion de timer
-    //runPomodoro(); // funcion de manejo de pomodoro
+    //run_countdown(); // funcion de timer
+    runPomodoro(); // funcion de manejo de pomodoro
     //startMetronome();
 
     inicio_pausa.setAttribute("estado", "pausa");
@@ -164,12 +207,72 @@ function playStop() {
     inicio_pausa.setAttribute("estado", "inicio");
     inicio_pausa.textContent = "Inicio";
   }
+}*/
+
+function playStop() {
+  let estadoActual = inicio_pausa.getAttribute("estado");
+
+  if (estadoActual === "inicio") {
+    switch (currentMode) {
+      case "crono":
+        switchRuner.crono_play();
+        break;
+
+      case "timer":
+        switchRuner.timer_play();
+        break;
+
+      case "pomo":
+        switchRuner.pomo_play();
+        break;
+
+      case "metro":
+        switchRuner.metro_play();
+        break;
+
+      default:
+        console.log("Modo desconocido: ", currentMode);
+        break;
+    }
+
+    inicio_pausa.setAttribute("estado", "pausa");
+    inicio_pausa.textContent = "Pausa";
+  } else {
+    switch (currentMode) {
+      case "crono":
+        switchRuner.crono_stop();
+        break;
+
+      case "timer":
+        switchRuner.timer_stop();
+        break;
+
+      case "pomo":
+        switchRuner.pomo_stop();
+        break;
+
+      case "metro":
+        switchRuner.metro_stop();
+        break;
+
+      default:
+        console.log("Modo desconocido: ", currentMode);
+        break;
+    }
+
+    inicio_pausa.setAttribute("estado", "inicio");
+    inicio_pausa.textContent = "Inicio";
+  }
 }
 
 function mainReset() {
   // junto a playStop se debe cambiar para cambiar dependiendo de la herramienta que se quiera usar
   reset_crono();
+  enableInputCountdown();
+  enableInputPom();
   metro_bpm.value = 60;
+  inicio_pausa.setAttribute("estado", "inicio");
+  inicio_pausa.textContent = "Inicio";
 }
 
 //  +++ funciones de cronometro +++
