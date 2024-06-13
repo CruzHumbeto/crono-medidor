@@ -495,29 +495,29 @@ function colorete() {
   let color;
 
   let verde_amarillo = [
-    "#00FF00",
-    "#7FFF00",
-    "#ADFF2F",
+    "#00FF00", //(Verde puro)
+    "#33FF00",
+    "#66FF00",
+    "#99FF00",
+    "#CCFF00",
     "#DFFF00",
-    "#FFFF00",
-    "#FFFF33",
-    "#FFD700",
-    "#FFDB58",
-    "#FFCC00",
-    "#FFBF00",
+    "#EFFF00",
+    "#F7FF00",
+    "#FBFF00",
+    "#FFFF00", //(Amarillo puro)"#00FF00",
   ];
 
   let amarillo_rojo = [
-    "#FFFF00",
-    "#FFA500",
-    "#FF7F00",
-    "#FF4500",
-    "#FF2400",
-    "#8B0000",
-    "#FF0000",
-    "#FF4500",
-    "#DC143C",
-    "#FF0000",
+    "#FFFF00", //(Amarillo puro)
+    "#FFEE00",
+    "#FFDD00",
+    "#FFCC00",
+    "#FFBB00",
+    "#FFAA00",
+    "#FF9900",
+    "#FF6600",
+    "#FF3300",
+    "#FF0000", //(Rojo puro)
   ];
 
   const all_colors = verde_amarillo.concat(amarillo_rojo);
