@@ -6,9 +6,16 @@ const switchRuner = {
     stop_crono();
   },
   timer_play: () => {
-    timeInInit = captura();
+    /*timeInInit = captura();
     disableInputCountdown();
-    run_countdown();
+    run_countdown();*/
+    if (inicio_pausa.textContent === "Inicio/Pausa") {
+      timeInInit = captura();
+      disableInputCountdown();
+      run_countdown();
+    } else if (inicio_pausa.textContent === "Inicio") {
+      run_countdown(); // Reanudar
+    }
   },
   timer_stop: () => {
     stop_crono();
@@ -19,9 +26,10 @@ const switchRuner = {
       timeInInit = captura();
       runPomodoro();
     } else if (inicio_pausa.textContent === "Inicio") {
-      run_countdown();
+      runPomodoro(true); // Reanudar
     }
   },
+
   pomo_stop: () => {
     stop_crono();
     enableInputPom();
@@ -36,10 +44,13 @@ const switchRuner = {
 };
 
 let currentMode = "crono"; // "crono", "timer", "pomo", "metro"
+let pausedTime = null; // Guardar el tiempo restante al pausar
 
 let time;
 let hh = (mm = ss = ms = 0);
 let timeInInit = [];
+
+finishTimer = false;
 
 const audioContext = new AudioContext();
 let oscillator;
@@ -49,6 +60,7 @@ let pomodoro = {
   ShortBreak: 5, //5,
   LongBreak: 15, // 15,
 };
+let pausedStep = null; // Guardar el paso actual al pausar
 
 let v_bpm = marcaTempo;
 let isPlaying = false;
@@ -123,22 +135,26 @@ metro_bpm.addEventListener("input", marcaTempo);
 function show_crono() {
   setActiveOption(op_crono, op_crono, button_crono);
   currentMode = "crono";
+  buttonStatus("inicio/pausa");
 }
 
 function show_timer() {
   setActiveOption(op_crono, op_timer, button_timer);
   currentMode = "timer";
+  buttonStatus("inicio/pausa");
 }
 
 function show_pom() {
   setActiveOption(op_crono, op_pom, button_pom);
   currentMode = "pomo";
+  buttonStatus("inicio/pausa");
 }
 
 function show_metro() {
   setActiveOption(op_crono, op_metonomo, button_metro);
   write_txt("0 BPM");
   currentMode = "metro";
+  buttonStatus("inicio/pausa");
 }
 
 function setActiveOption(
@@ -183,31 +199,6 @@ function setActiveOption(
 // acciones de elementos de tarjeta ---------------------------------------
 
 //  +++ funcion para boton de inicio y pausa +++
-// se debe solucionar el problema de siempre comenzar de nuevo al darle a inicio (posible solucion: agregar un tercer estado inicio, play, stop)
-/*function playStop() {
-  let estadoActual = inicio_pausa.getAttribute("estado");
-
-  if (estadoActual === "inicio") {
-    //run_crono();  // funcion de cronometro
-    timeInInit = captura(); // variable necesaria para la funcioon colorete
-    disableInputCountdown();
-    //run_countdown(); // funcion de timer
-    runPomodoro(); // funcion de manejo de pomodoro
-    //startMetronome();
-
-    inicio_pausa.setAttribute("estado", "pausa");
-    inicio_pausa.textContent = "Pausa";
-  } else {
-    stop_crono();
-    enableInputCountdown();
-    enableInputPom();
-    isPlaying = false;
-    stopMetronome();
-
-    inicio_pausa.setAttribute("estado", "inicio");
-    inicio_pausa.textContent = "Inicio";
-  }
-}*/
 
 function playStop() {
   let estadoActual = inicio_pausa.getAttribute("estado");
@@ -217,62 +208,86 @@ function playStop() {
       case "crono":
         switchRuner.crono_play();
         break;
-
       case "timer":
         switchRuner.timer_play();
         break;
-
       case "pomo":
-        switchRuner.pomo_play();
+        if (pausedTime) {
+          runPomodoro(true); // Reanudar
+        } else {
+          switchRuner.pomo_play();
+        }
         break;
-
       case "metro":
         switchRuner.metro_play();
         break;
-
       default:
         console.log("Modo desconocido: ", currentMode);
         break;
     }
-
-    inicio_pausa.setAttribute("estado", "pausa");
-    inicio_pausa.textContent = "Pausa";
+    buttonStatus("pausa");
   } else {
     switch (currentMode) {
       case "crono":
         switchRuner.crono_stop();
         break;
-
       case "timer":
         switchRuner.timer_stop();
         break;
-
       case "pomo":
+        pausedTime = captura(); // Guardar el tiempo al pausar
         switchRuner.pomo_stop();
         break;
-
       case "metro":
         switchRuner.metro_stop();
         break;
-
       default:
         console.log("Modo desconocido: ", currentMode);
         break;
     }
+    buttonStatus("inicio");
+  }
+}
 
+function buttonStatus(status) {
+  if (status === "inicio") {
     inicio_pausa.setAttribute("estado", "inicio");
     inicio_pausa.textContent = "Inicio";
+  } else if (status === "pausa") {
+    inicio_pausa.setAttribute("estado", "pausa");
+    inicio_pausa.textContent = "Pausa";
+  } else if (status === "inicio/pausa") {
+    inicio_pausa.setAttribute("estado", "inicio");
+    inicio_pausa.textContent = "Inicio/Pausa";
   }
 }
 
 function mainReset() {
-  // junto a playStop se debe cambiar para cambiar dependiendo de la herramienta que se quiera usar
-  reset_crono();
+  switch (currentMode) {
+    case "crono":
+      reset_crono();
+      break;
+    case "timer":
+      reset_crono();
+      enableInputCountdown();
+      break;
+    case "pomo":
+      reset_crono();
+      enableInputPom();
+      break;
+    case "metro":
+      metro_bpm.value = 60;
+      write_txt(`${metro_bpm.value} BPM`);
+    default:
+      break;
+  }
+  /*reset_crono();
   enableInputCountdown();
   enableInputPom();
   metro_bpm.value = 60;
-  inicio_pausa.setAttribute("estado", "inicio");
-  inicio_pausa.textContent = "Inicio";
+  //inicio_pausa.setAttribute("estado", "inicio");
+  //inicio_pausa.textContent = "Inicio/Pausa";*/
+  buttonStatus("inicio/pausa");
 }
 
 //  +++ funciones de cronometro +++
@@ -380,68 +395,16 @@ function poneTiempo(event) {
   ss = arrayTime[2];
   write_crono();
 }
-/*
-function run_countdown() {
-  time = setInterval(() => {
-    ms--;
 
-    if (ms <= 0 && ss > 0) {
-      ms = 99;
-      ss--;
-      ms = ms < 10 ? "0" + ms : ms;
-      ss = ss < 10 ? "0" + ss : ss;
-    } else if (ms <= 0 && ss < 0) {
-      ms = 99;
-      ss = 59;
-      mm--;
-      ms = ms < 10 ? "0" + ms : ms;
-      ss = ss < 10 ? "0" + ss : ss;
-      mm = mm < 10 ? "0" + mm : mm;
-    }
-
-    if (ss <= 0 && mm > 0) {
-      ss = 59;
-      mm--;
-      ss = ss < 10 ? "0" + ss : ss;
-      mm = mm < 10 ? "0" + mm : mm;
-    } else if (ss <= 0 && mm < 0) {
-      ss = 59;
-      mm = 59;
-      hh--;
-      ss = ss < 10 ? "0" + ss : ss;
-      mm = mm < 10 ? "0" + mm : mm;
-      hh = hh < 10 ? "0" + hh : hh;
-    }
-
-    if (mm <= 0 && hh > 0) {
-      mm = 59;
-      hh--;
-      mm = mm < 10 ? "0" + mm : mm;
-      hh = hh < 10 ? "0" + hh : hh;
-    } else if (mm <= 0 && hh < 0) {
-      mm = 59;
-      hh = 0;
-      mm = mm < 10 ? "0" + mm : mm;
-      hh = hh < 10 ? "0" + hh : hh;
-    }
-
-    if (hh == 0 && mm == 0 && ss == 0 && ms <= 0) {
-      reset_crono();
-      inicio_pausa.setAttribute("estado", "inicio");
-      inicio_pausa.textContent = "Inicio";
-      //bip(440 * 2, 0.5);
-      reBip();
-    }
-
+function run_countdown(initialTime = null) {
+  if (initialTime) {
+    [hh, mm, ss] = initialTime;
     write_crono();
-    colorete();
-  }, 10);
-}
-*/
-///*
-function run_countdown() {
+  }
+
   return new Promise((resolve) => {
     time = setInterval(() => {
+      finishTimer = false;
       ms--;
 
       if (ms <= 0 && ss > 0) {
@@ -488,9 +451,9 @@ function run_countdown() {
         reBip();
         clearInterval(time);
         reset_crono();
-        inicio_pausa.setAttribute("estado", "inicio");
-        inicio_pausa.textContent = "Inicio";
-        //reBip();
+        finishTimer = true;
+        //inicio_pausa.setAttribute("estado", "inicio");
+        //inicio_pausa.textContent = "Inicio";
         resolve();
       }
       write_crono();
@@ -498,7 +461,6 @@ function run_countdown() {
     }, 10);
   });
 }
-//*/
 
 function captura() {
   let segundos = parseInt(seg.innerHTML);
@@ -661,14 +623,6 @@ function write_pomodoro(typeTimer, mm) {
   hr.textContent = typeTimer;
 }
 
-/*function write_txt(txt) {
-  mseg.textContent = "";
-  seg.textContent = "";
-  min.textContent = "";
-  puntos.textContent = "";
-  hr.textContent = txt;
-}*/
-
 function disableInputPom() {
   pom_trabajo.disabled = true;
   pom_pausita.disabled = true;
@@ -693,41 +647,36 @@ class PomodoroIterator {
       "ShortBreak",
       "Pomodoro",
       "LongBreak",
+      "nothing",
     ];
     this.currentIndex = 0;
-    this.resetCount = 4; // Reiniciar cada 4 pomodoros
-    this.currentCount = 0;
   }
 
   [Symbol.iterator]() {
     return this;
   }
 
+  hasNext() {
+    this.currentIndex <= this.pomodoros.length;
+  }
   next() {
-    if (this.currentIndex >= this.pomodoros.length) {
-      this.currentIndex = 0;
-      this.currentCount = 0;
-      return { done: true };
-    }
-
     const currentStep = this.pomodoros[this.currentIndex];
     const stepTime = this.pomodoroTimes[currentStep];
     this.currentIndex++;
-
-    if (this.currentIndex % 2 === 0) {
-      this.currentCount++;
-    }
 
     return { value: { step: currentStep, time: stepTime }, done: false };
   }
 
   reset() {
     this.currentIndex = 0;
-    this.currentCount = 0;
   }
 
   getCurrentStep() {
     return this.pomodoros[this.currentIndex];
+  }
+
+  getCurrentStepTime() {
+    return this.pomodoroTimes[this.pomodoros[this.currentIndex]];
   }
 
   getNextStep() {
@@ -739,27 +688,72 @@ class PomodoroIterator {
 }
 
 const pomodoroIterator = new PomodoroIterator(pomodoro);
-
-async function runPomodoro() {
+/*
+async function runPomodoro(resume = false) {
   disableInputPom();
+  let isResuming = resume;
   for (const step of pomodoroIterator) {
-    console.log(`Doing ${step.step}`);
-    ss = parseInt(step.time);
-    //write_pomodoro(step.step, step.time);
+    if (isResuming) {
+      [hh, mm, ss] = pausedTime;
+      isResuming = false; // Se reanuda solo una vez
+    } else {
+      console.log(`Doing ${step.step}`);
+      ss = parseInt(step.time);
+      write_pomodoro(step.step, step.time);
 
-    //console.log(`tiempo inicial: ${timeInInit}`);
+      await new Promise((resolve) => setTimeout(resolve, 1500)); // Pausa de 1.5 segundos
 
-    write_pomodoro(step.step, step.time);
-    await new Promise((resolve) => setTimeout(resolve, 1500)); // Pausa de 1 segundo
+      write_crono();
+      timeInInit = captura();
+    }
 
-    write_crono();
-    timeInInit = captura();
     await run_countdown();
-
     await preguntaContinua(step.step);
 
     if (step.step === "LongBreak" && !pomodoroIterator.getNextStep()) {
       await preguntaRenueva();
+    }
+  }
+}*/
+
+async function runPomodoro(resume = false) {
+  disableInputPom();
+  let isResuming = resume;
+  let currentStep;
+
+  while (pomodoroIterator.hasNext) {
+    // Si estamos reanudando, usamos el paso guardado previamente
+    if (isResuming && pausedTime) {
+      [hh, mm, ss] = pausedTime;
+      pomodoroIterator.currentIndex = pausedStep;
+      isResuming = false; // Se reanuda solo una vez
+    } else {
+      //let step = pomodoroIterator.next();
+      /*if (step.done) {
+        break;
+      }*/
+      currentStep = pomodoroIterator.getCurrentStep();
+      ss = parseInt(pomodoroIterator.getCurrentStepTime());
+      disableButtons();
+      write_pomodoro(
+        pomodoroIterator.getCurrentStep(),
+        pomodoroIterator.getCurrentStepTime()
+      );
+      await new Promise((resolve) => setTimeout(resolve, 1500)); // Pausa de 1.5 segundos
+      write_crono();
+      timeInInit = captura();
+    }
+
+    pausedStep = pomodoroIterator.currentIndex; // Guardar el paso actual para reanudación
+    pausedTime = null; // Resetear el tiempo pausado
+    enableButtons();
+    await run_countdown();
+    await preguntaContinua(pomodoroIterator.getCurrentStep());
+    const next = pomodoroIterator.next();
+
+    if (pomodoroIterator.getNextStep() == null) {
+      await preguntaRenueva();
+      //pomodoroIterator.reset();
     }
   }
 }
@@ -788,6 +782,16 @@ async function preguntaContinua(step) {
     //alert(`Ha terminado el tiempo de ${step}`);
     resolve();
   });
+}
+
+function disableButtons() {
+  inicio_pausa.disabled = true;
+  reiniciar.disabled = true;
+}
+
+function enableButtons() {
+  inicio_pausa.disabled = false;
+  reiniciar.disabled = false;
 }
 
 // +++ Funciones de metronomo +++
