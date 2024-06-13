@@ -14,6 +14,7 @@ const switchRuner = {
       disableInputCountdown();
       run_countdown();
     } else if (inicio_pausa.textContent === "Inicio") {
+      disableInputCountdown();
       run_countdown(); // Reanudar
     }
   },
@@ -452,8 +453,10 @@ function run_countdown(initialTime = null) {
         clearInterval(time);
         reset_crono();
         finishTimer = true;
-        //inicio_pausa.setAttribute("estado", "inicio");
-        //inicio_pausa.textContent = "Inicio";
+        if (finishTimer && currentMode == "timer") {
+          enableInputCountdown();
+          buttonStatus("inicio/pausa");
+        }
         resolve();
       }
       write_crono();
